@@ -34,6 +34,9 @@ function UserCard({user}) {
         <Typography className={classes.pos} color="textSecondary">
           {user.email}
         </Typography>
+        <Typography >
+          {user.role}
+        </Typography>
         
       </CardContent>
       <Typography className={classes.pos} color="textSecondary">

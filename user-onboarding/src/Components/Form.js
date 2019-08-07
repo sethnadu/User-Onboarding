@@ -66,6 +66,9 @@ const useStyles = makeStyles({
         display: "flex",
         flexFlow: "row wrap",
         margin: "10px",
+    },
+    dropDown: {
+        margin: "10px",
     }
 
   });
@@ -77,9 +80,10 @@ const UserForm = ({ errors, touched, checkbox, status }) => {
     const classes = useStyles();
 
 
-    const [users, setUsers] = useState([{name: "Seth", email:"seth.nadu@gmail.com", createdAt: "placeholder"}]);
-    console.log(users)
+    const [users, setUsers] = useState([{name: "Seth", email:"seth.nadu@gmail.com", createdAt: "placeholder", role: "Front End"}]);
     
+    const emailsUsed = [];
+    users.map(user =>  emailsUsed.push(user.email))
 
     useEffect(() => {
         if(status) {
@@ -99,6 +103,16 @@ const UserForm = ({ errors, touched, checkbox, status }) => {
               {touched.email && errors.email && <p className={classes.error}>{errors.email}</p>}
               <Field className={classes.field} type = "password" name = "password" placeholder = "Password" />
               {touched.password && errors.password && <p className={classes.error}>{errors.password}</p>}
+              <Field className={classes.dropDown} name="role" component="select">
+                  <option>Please Choose a Role</option>
+                  <option value = "Back End">Back End</option>
+                  <option value = "Front End">Front End</option>
+                  <option value = "Team Lead">Team Lead</option>
+                  <option value = "UI Developer">UI Developer</option>
+                  <option value = "UX Designer">UX Designer</option>
+              </Field>
+              {touched.role && errors.role && <p className={classes.error}>{errors.role}</p>}
+
               <label className={classes.TOS}>
               Accept Terms and Conditions
               <Field className={classes.checkbox} type="checkbox" name="TOS" checked ={checkbox}/>
@@ -113,17 +127,20 @@ const UserForm = ({ errors, touched, checkbox, status }) => {
              return <UserCard key={user.id} user={user} />
           })}
           </div>
+
+    
         </div>
     )
 }
 
 const FormikUserForm = withFormik({
-    mapPropsToValues({name, email, password, TOS}){
+    mapPropsToValues({name, email, password, TOS, role}, userEmail){
         return {
             name: name || "",
             email: email || "",
             password: password || "",
-            TOS: TOS || false
+            TOS: TOS || false, 
+            role: role || ''
 
      }
     },
@@ -139,16 +156,29 @@ const FormikUserForm = withFormik({
             .required("Password is Required"),
         TOS: Yup.boolean()
             .oneOf([true], "Must Accept Terms and Conditions")
-            .required()
+            .required(),
+        role: Yup.string()
+            .required("Role is Required")
+            
     }),
 
-    handleSubmit(values, {resetForm, setStatus}) {
-        axios 
-            .post('https://reqres.in/api/users/', values)
-            .then(res => setStatus(res.data))
-            .catch(err => console.log(err.response))
-        resetForm();
-    }
+    handleSubmit(values, {resetForm, setStatus, setErrors, setSubmitting}) {
+        console.log(values)
+        setTimeout(() => {
+            if(values.email === "seth.nadu@gmail.com") {
+                setErrors({email: "That email is already taken"})
+                
+            } else {
+                axios 
+                    .post('https://reqres.in/api/users/', values)
+                    .then(res => setStatus(res.data))
+                    .catch(err => console.log(err.response))
+                resetForm();
+            }
+            setSubmitting(false)
+        }, 2000)
+        
+        }
     
 })(UserForm);
 
